@@ -27,14 +27,21 @@ class Frame:
         """Define Scheme SYMBOL to have VALUE."""
         # BEGIN PROBLEM 1
         "*** YOUR CODE HERE ***"
+        self.bindings[symbol] = value
         # END PROBLEM 1
 
     def lookup(self, symbol):
         """Return the value bound to SYMBOL. Errors if SYMBOL is not found."""
         # BEGIN PROBLEM 1
         "*** YOUR CODE HERE ***"
+        if symbol in self.bindings:
+            return self.bindings[symbol]
+        elif self.parent is not None:
+            return self.parent.lookup(symbol)
+        else:
+            raise SchemeError('unknown identifier: {0}'.format(symbol))
         # END PROBLEM 1
-        raise SchemeError('unknown identifier: {0}'.format(symbol))
+        
 
 
     def make_child_frame(self, formals, vals):
@@ -52,6 +59,12 @@ class Frame:
             raise SchemeError('Incorrect number of arguments to function call')
         # BEGIN PROBLEM 8
         "*** YOUR CODE HERE ***"
+        new_env = Frame(self)
+        while formals is not nil:
+            new_env.define(formals.first, vals.first)
+            formals = formals.rest 
+            vals  = vals.rest 
+        return new_env
         # END PROBLEM 8
 
 ##############
