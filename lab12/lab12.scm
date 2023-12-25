@@ -1,7 +1,12 @@
 (define (if-program condition if-true if-false)
-  'YOUR-CODE-HERE)
+  `(if, condition, if-true, if-false)
+  )
 
-(define (pow-expr n p) 'YOUR-CODE-HERE)
+(define (pow-expr n p) 
+(if (> p 0)
+`(*,(pow-expr n (- p 1)), n)
+1
+))
 
 (define (cddr s) (cdr (cdr s)))
 
@@ -14,4 +19,10 @@
         (first (car (cdr expr)))
         (second (caddr expr))
         (rest (cdr (cddr expr))))
-    'YOUR-CODE-HERE))
+    (if (>= (eval first) (eval second))
+        expr
+        (cons op (cons second (cons first rest)))
+    )
+  )
+)
+
