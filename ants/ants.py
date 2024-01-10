@@ -181,6 +181,8 @@ class ThrowerAnt(Ant):
     damage = 1
     # ADD/OVERRIDE CLASS ATTRIBUTES HERE
     food_cost = 3
+    upper_bound = float('inf')
+    lower_bound = 0
     def nearest_bee(self):
         """Return the nearest Bee in a Place that is not the HIVE, connected to
         the ThrowerAnt's Place by following entrances.
@@ -189,22 +191,15 @@ class ThrowerAnt(Ant):
         """
         # BEGIN Problem 3 and 4
         #return random_bee(self.place.bees)  REPLACE THIS LINE
-        place = self.place 
-        distance = 0 
-        upper_bound = 999
-        lower_bound = -1
-        while place != None: 
-            if place.is_hive: 
-                return None
-            if place.bees: 
-                if distance < upper_bound and distance > lower_bound: 
-                    return random_bee(place.bees) 
-                else: 
-                    return None
-            else: 
-                place = place.entrance 
-                distance += 1 
-        return None
+        place = self.place
+        distance = 0
+        bees=[]
+        while place.is_hive == False and place != None and not bees:
+            if self.lower_bound <= distance <= self.upper_bound:
+                bees = place.bees
+            place = place.entrance
+            distance+=1
+        return random_bee(bees)
         # END Problem 3 and 4
 
     def throw_at(self, target):
@@ -238,6 +233,7 @@ class ShortThrower(ThrowerAnt):
     # BEGIN Problem 4
     implemented = True   # Change to True to view in the GUI
     upper_bound = 3 
+    lower_bound = 0
     # END Problem 4
 
 
@@ -250,8 +246,10 @@ class LongThrower(ThrowerAnt):
     food_cost = 2
     # OVERRIDE CLASS ATTRIBUTES HERE
     # BEGIN Problem 4
-    lower_bound = 4
-    implemented = True  # Change to True to view in the GUI
+    implemented = True
+    lower_bound = 5
+    upper_bound = float('inf')
+      # Change to True to view in the GUI
     # END Problem 4
 
 
@@ -263,14 +261,15 @@ class FireAnt(Ant):
     food_cost = 5
     # OVERRIDE CLASS ATTRIBUTES HERE
     # BEGIN Problem 5
-    implemented = False   # Change to True to view in the GUI
+    
+    implemented = True   # Change to True to view in the GUI
     # END Problem 5
 
     def __init__(self, health=3):
         """Create an Ant with a HEALTH quantity."""
         super().__init__(health)
 
-    def reduce_health(self, amount):
+    def reduce_health(self, amount):  # sourcery skip: merge-else-if-into-elif
         """Reduce health by AMOUNT, and remove the FireAnt from its place if it
         has no health remaining.
 
@@ -279,6 +278,18 @@ class FireAnt(Ant):
         """
         # BEGIN Problem 5
         "*** YOUR CODE HERE ***"
+        health = self.health
+        super().reduce_health(amount)
+        if amount >= health:
+            total_damage = self.damage+amount-health
+            if self.place.bees != None:
+                for bee in self.place.bees[:]:
+                    bee.reduce_health(total_damage)
+                self.place.remove_insect(self)
+        else:
+            if self.place.bees != None:            
+                for bee in self.place.bees[:]:
+                    bee.reduce_health(amount)
         # END Problem 5
 
 # BEGIN Problem 6
