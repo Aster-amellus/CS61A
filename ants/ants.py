@@ -269,35 +269,58 @@ class FireAnt(Ant):
         """Create an Ant with a HEALTH quantity."""
         super().__init__(health)
 
-    def reduce_health(self, amount):  # sourcery skip: merge-else-if-into-elif
+    def reduce_health(self, amount):
         """Reduce health by AMOUNT, and remove the FireAnt from its place if it
         has no health remaining.
 
         Make sure to reduce the health of each bee in the current place, and apply
         the additional damage if the fire ant dies.
         """
-        # BEGIN Problem 5
-        "*** YOUR CODE HERE ***"
-        health = self.health
+        # Store the bees in a temporary list before reducing health
+        bees_in_place = self.place.bees[:] if self.place else []
+        max_damage = self.damage+self.health
+        # Reduce the ant's health
         super().reduce_health(amount)
-        if amount >= health:
-            total_damage = self.damage+amount-health
-            if self.place.bees != None:
-                for bee in self.place.bees[:]:
-                    bee.reduce_health(total_damage)
-                self.place.remove_insect(self)
-        else:
-            if self.place.bees != None:            
-                for bee in self.place.bees[:]:
-                    bee.reduce_health(amount)
-        # END Problem 5
+
+        # Calculate total damage
+        total_damage = max_damage if self.health <= 0 else amount
+
+        # Apply damage to each bee
+        for bee in bees_in_place:
+            bee.reduce_health(total_damage)
+
 
 # BEGIN Problem 6
 # The WallAnt class
+class WallAnt(Ant):
+    name = "Wall"
+    food_cost = 4
+    
+    implemented = True
+    def __init__(self, health=4):
+        """Create an Ant with a HEALTH quantity."""
+        super().__init__(health)
 # END Problem 6
 
 # BEGIN Problem 7
 # The HungryAnt Class
+class HungryAnt(Ant):
+    name = "Hungry"
+    food_cost = 4
+    chewing_turns = 3    
+    implemented = True
+    def __init__(self, health=1):
+        super().__init__(health)
+        self.turns_to_chew = 0
+    def action(self, gamestate):
+        bees = self.place.bees
+        if self.turns_to_chew > 0:
+            self.turns_to_chew -= 1
+        elif bees:
+            bee = random_bee(bees)
+            bee.reduce_health(bee.health)
+            self.turns_to_chew = self.chewing_turns
+
 # END Problem 7
 
 
