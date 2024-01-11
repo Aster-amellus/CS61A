@@ -55,7 +55,7 @@ class Insect:
 
     damage = 0
     # ADD CLASS ATTRIBUTES HERE
-
+    is_waterproof = False
     def __init__(self, health, place=None):
         """Create an Insect with a health amount and a starting PLACE."""
         self.health = health
@@ -107,6 +107,7 @@ class Ant(Insect):
     implemented = False  # Only implemented Ant classes should be instantiated
     food_cost = 0
     is_container = False
+    is_doubled = False
     # ADD CLASS ATTRIBUTES HERE
 
     def __init__(self, health=1):
@@ -157,6 +158,9 @@ class Ant(Insect):
         """Double this ants's damage, if it has not already been doubled."""
         # BEGIN Problem 12
         "*** YOUR CODE HERE ***"
+        if not self.is_doubled:
+            self.damage *= 2
+            self.is_doubled = True
         # END Problem 12
 
 
@@ -387,6 +391,7 @@ class BodyguardAnt(ContainerAnt):
     # BEGIN Problem 8c
     def __init__(self, health=2):
         super().__init__(health=2)
+        self.ant_contained = None
     implemented = True   # Change to True to view in the GUI
     # END Problem 8c
 
@@ -416,18 +421,25 @@ class Water(Place):
     """Water is a place that can only hold waterproof insects."""
 
     def add_insect(self, insect):
-        """Add an Insect to this place. If the insect is not waterproof, reduce
-        its health to 0."""
-        # BEGIN Problem 10
-        "*** YOUR CODE HERE ***"
+        super().add_insect(insect)
+        if insect.is_waterproof == False:
+            insect.reduce_health(insect.health)
         # END Problem 10
 
 # BEGIN Problem 11
 # The ScubaThrower class
+class ScubaThrower(ThrowerAnt):
+    name = "Scuba"
+    is_waterproof = True
+    food_cost = 6
+    #Override class attribute here
+    
+    def __init__(self, health=1):
+        super().__init__(health)
 # END Problem 11
 
 # BEGIN Problem 12
-class QueenAnt(Ant):  # You should change this line
+class QueenAnt(ScubaThrower):  # You should change this line
 # END Problem 12
     """QueenAnt is a ScubaThrower that boosts the damage of all ants behind her."""
 
@@ -435,15 +447,27 @@ class QueenAnt(Ant):  # You should change this line
     food_cost = 7
     # OVERRIDE CLASS ATTRIBUTES HERE
     # BEGIN Problem 12
-    implemented = False   # Change to True to view in the GUI
+    def __init__(self, health=1):
+        super().__init__(health)
+    implemented = True  # Change to True to view in the GUI
     # END Problem 12
 
     def action(self, gamestate):
+        
         """A queen ant throws a leaf, but also doubles the damage of ants
         in her tunnel.
         """
         # BEGIN Problem 12
         "*** YOUR CODE HERE ***"
+        ScubaThrower.action(self, gamestate)
+        place = self.place
+        while place.exit:
+            place = place.exit
+            if isinstance(place.ant, ContainerAnt) and place.ant.is_container and place.ant.ant_contained:
+                place.ant.ant_contained.double()
+                place.ant.double()
+            elif place.ant:
+                place.ant.double()
         # END Problem 12
 
     def reduce_health(self, amount):
@@ -452,11 +476,15 @@ class QueenAnt(Ant):  # You should change this line
         """
         # BEGIN Problem 12
         "*** YOUR CODE HERE ***"
+        super().reduce_health(amount)
+        if self.health <= 0:
+            ants_lose()
         # END Problem 12
 
     def remove_from(self, place):
         # BEGIN Problem 12
         "*** YOUR CODE HERE ***"
+        self.place = place
         # END Problem 12
 
 
@@ -475,6 +503,7 @@ class Bee(Insect):
 
     name = 'Bee'
     damage = 1
+    is_waterproof = True
     # OVERRIDE CLASS ATTRIBUTES HERE
 
     def sting(self, ant):
