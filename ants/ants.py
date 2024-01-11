@@ -133,11 +133,16 @@ class Ant(Insect):
     def add_to(self, place):
         if place.ant is None:
             place.ant = self
+        elif isinstance(place.ant, ContainerAnt) and place.ant.can_contain(self):
+            place.ant.store_ant(self)
+        elif isinstance(self, ContainerAnt) and place.ant.is_container == False:
+            cur_ant = place.ant
+            place.ant = self
+            place.ant.store_ant(cur_ant)
         else:
-            # BEGIN Problem 8b
-            assert place.ant is None, 'Two ants in {0}'.format(place)
-            # END Problem 8b
+            assert place.ant is None or self.can_contain(place.ant), 'Two ants in {0}'.format(place)
         Insect.add_to(self, place)
+
 
     def remove_from(self, place):
         if place.ant is self:
@@ -337,11 +342,16 @@ class ContainerAnt(Ant):
     def can_contain(self, other):
         # BEGIN Problem 8a
         "*** YOUR CODE HERE ***"
+        if self.ant_contained is None and other.is_container == False:
+            return True
+        else:
+            return False
         # END Problem 8a
 
     def store_ant(self, ant):
         # BEGIN Problem 8a
         "*** YOUR CODE HERE ***"
+        self.ant_contained = ant
         # END Problem 8a
 
     def remove_ant(self, ant):
@@ -362,6 +372,8 @@ class ContainerAnt(Ant):
     def action(self, gamestate):
         # BEGIN Problem 8a
         "*** YOUR CODE HERE ***"
+        if self.ant_contained:
+            self.ant_contained.action(gamestate)
         # END Problem 8a
 
 
@@ -370,13 +382,33 @@ class BodyguardAnt(ContainerAnt):
 
     name = 'Bodyguard'
     food_cost = 4
+    damage = 0
     # OVERRIDE CLASS ATTRIBUTES HERE
     # BEGIN Problem 8c
-    implemented = False   # Change to True to view in the GUI
+    def __init__(self, health=2):
+        super().__init__(health=2)
+    implemented = True   # Change to True to view in the GUI
     # END Problem 8c
 
 # BEGIN Problem 9
 # The TankAnt class
+class TankAnt(BodyguardAnt):
+    name = "Tank"
+    food_cost = 6
+    damage = 1
+    # Override class attributes here
+    
+    def __init__(self, health=2):
+        super().__init__(health)
+        
+    def action(self, gamestate):
+        bees_in_place = self.place.bees[:] if self.place else []
+        # Reduce the ant's health
+        super().reduce_health(self.damage)
+        # Apply damage to each bee
+        for bee in bees_in_place:
+            bee.reduce_health(self.damage)        
+        return super().action(gamestate)
 # END Problem 9
 
 
