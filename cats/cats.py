@@ -160,7 +160,7 @@ def autocorrect(typed_word, word_list, diff_function, limit):
     if typed_word in word_list:
         return typed_word
     for i in word_list:
-        if diff_function(typed_word, i, liCmit) < offset:
+        if diff_function(typed_word, i, limit) < offset:
             pending_word = i
             offset = diff_function(typed_word, i, limit)
     return pending_word
